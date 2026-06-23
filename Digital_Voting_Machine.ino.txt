@@ -1,0 +1,191 @@
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
+
+
+// LCD connection
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+
+// Buttons
+#define A_BUTTON 6
+#define B_BUTTON 7
+#define C_BUTTON 8
+#define RESULT_BUTTON 10
+
+
+// EEPROM locations
+#define A_ADDR 0
+#define B_ADDR 1
+#define C_ADDR 2
+
+
+int voteA;
+int voteB;
+int voteC;
+
+
+unsigned long lastPress = 0;
+int debounceTime = 300;
+
+
+
+void setup()
+{
+
+  lcd.begin(16,2);
+
+
+  pinMode(A_BUTTON, INPUT_PULLUP);
+  pinMode(B_BUTTON, INPUT_PULLUP);
+  pinMode(C_BUTTON, INPUT_PULLUP);
+  pinMode(RESULT_BUTTON, INPUT_PULLUP);
+
+
+
+  // Read stored votes
+
+  voteA = EEPROM.read(A_ADDR);
+  voteB = EEPROM.read(B_ADDR);
+  voteC = EEPROM.read(C_ADDR);
+
+
+
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Digital Voting");
+
+  lcd.setCursor(0,1);
+  lcd.print("Machine Ready");
+
+
+  delay(2000);
+
+  lcd.clear();
+
+}
+
+
+
+void loop()
+{
+
+
+  if(checkButton(A_BUTTON))
+  {
+
+    voteA++;
+
+    EEPROM.write(A_ADDR, voteA);
+
+    showVote("Candidate A");
+
+  }
+
+
+
+  if(checkButton(B_BUTTON))
+  {
+
+    voteB++;
+
+    EEPROM.write(B_ADDR, voteB);
+
+    showVote("Candidate B");
+
+  }
+
+
+
+
+  if(checkButton(C_BUTTON))
+  {
+
+    voteC++;
+
+    EEPROM.write(C_ADDR, voteC);
+
+    showVote("Candidate C");
+
+  }
+
+
+
+
+
+  if(checkButton(RESULT_BUTTON))
+  {
+
+    lcd.clear();
+
+
+    lcd.setCursor(0,0);
+
+    lcd.print("A:");
+    lcd.print(voteA);
+
+    lcd.print(" B:");
+    lcd.print(voteB);
+
+
+
+    lcd.setCursor(0,1);
+
+    lcd.print("C:");
+    lcd.print(voteC);
+
+
+
+    delay(4000);
+
+    lcd.clear();
+
+  }
+
+
+
+}
+
+
+
+bool checkButton(int pin)
+{
+
+  if(digitalRead(pin)==LOW)
+  {
+
+    if(millis()-lastPress > debounceTime)
+    {
+
+      lastPress = millis();
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+
+}
+
+
+
+
+void showVote(String name)
+{
+
+  lcd.clear();
+
+  lcd.print(name);
+
+  lcd.setCursor(0,1);
+
+  lcd.print("Vote Added");
+
+
+  delay(1500);
+
+  lcd.clear();
+
+}
